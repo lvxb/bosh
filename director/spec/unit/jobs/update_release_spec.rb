@@ -14,6 +14,51 @@ describe Bosh::Director::Jobs::UpdateRelease do
     FileUtils.remove_entry_secure(@release_dir) if File.exist?(@release_dir)
   end
 
+  describe "updating a release" do
+    context "commit_hash and dirty flag" do
+      let(:manifest) do
+        {
+            "name" => "appcloud",
+            "version" => "42.6-dev",
+            "commit_hash" => "12345678",
+            "dirty" => "true",
+            "jobs" => [],
+            "packages" => []
+        }
+      end
+
+      it "sets commit_hash and dirty flag on release_version" do
+        release_dir = ReleaseHelper.create_release_tarball(manifest)
+        job = BD::Jobs::UpdateRelease.new(release_dir)
+        job.extract_release
+        job.verify_manifest
+        job.process_release
+
+        rv = BDM::ReleaseVersion.filter(:version => "42.6-dev").first
+
+        rv.should_not be_nil
+        rv.commit_hash.should == "12345678"
+        rv.dirty.should be_true
+      end
+
+      it "sets default commit_hash and dirty flag if missing" do
+        manifest.delete("commit_hash")
+        manifest.delete("dirty")
+        release_dir = ReleaseHelper.create_release_tarball(manifest)
+        job = BD::Jobs::UpdateRelease.new(release_dir)
+        job.extract_release
+        job.verify_manifest
+        job.process_release
+
+        rv = BDM::ReleaseVersion.filter(:version => "42.6-dev").first
+
+        rv.should_not be_nil
+        rv.commit_hash.should == "unknown"
+        rv.dirty.should be_false
+      end
+    end
+  end
+
   describe "rebasing release" do
     before(:each) do
       @manifest = {

@@ -240,6 +240,31 @@ describe Bosh::Cli::Command::Base do
       @cmd.delete("foo")
     end
 
+    describe 'git commit hash' do
+      before(:all) do
+        @back = Dir.pwd
+      end
+
+      after(:each) do
+        Dir.chdir(@back)
+      end
+
+      it 'should return the latest commit hash' do
+        @cmd.commit_hash.should match /[\da-h]{8}/
+      end
+
+      it 'should return 00000000 for commit hash it there is not a git repo' do
+        Dir.mktmpdir do |dir|
+          Dir.chdir(dir)
+          @cmd.commit_hash.should == '00000000'
+        end
+      end
+
+      it 'should return 00000000 if git is not found' do
+        Bosh::Exec.stub(:sh).and_raise Bosh::Exec::Error.new(nil, nil)
+        @cmd.commit_hash.should == '00000000'
+      end
+    end
   end
 
   describe Bosh::Cli::Command::JobManagement do

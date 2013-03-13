@@ -94,6 +94,8 @@ module Bosh::Director
 
         @name = @manifest["name"]
         @version = @manifest["version"]
+        @commit_hash = @manifest.fetch("commit_hash", nil)
+        @dirty = @manifest.fetch("dirty", nil)
 
         # TODO: make sure all jobs are there
         # TODO: make sure there are no extra jobs
@@ -114,6 +116,8 @@ module Bosh::Director
           :release => @release_model,
           :version => @version
         }
+        version_attrs[:dirty] = @dirty if @dirty
+        version_attrs[:commit_hash] = @commit_hash if @commit_hash
 
         @release_version_model = Models::ReleaseVersion.new(version_attrs)
         unless @release_version_model.valid?

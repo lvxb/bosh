@@ -237,7 +237,7 @@ describe Bosh::Director::ApiController do
           release = BD::Models::Release.create(:name => "release-#{i}")
           (0..rand(3)).each do |v|
             BD::Models::ReleaseVersion.
-                create(:release => release, :version => v)
+                create(:release => release, :version => v, :dirty => [true,false].sample)
           end
           d = BD::Models::Deployment.create(:name => "deployment-#{i}")
           d.add_release_version(release.versions.sample)
@@ -264,6 +264,7 @@ describe Bosh::Director::ApiController do
           ]
         end
 
+        require 'pp'; pp expected_collection
         response_collection.should == expected_collection
       end
 

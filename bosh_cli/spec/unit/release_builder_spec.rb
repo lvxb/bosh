@@ -30,6 +30,16 @@ describe Bosh::Cli::ReleaseBuilder do
     File.file?(expected_tarball_path).should be_true
   end
 
+  it 'should include git hash and dirty state in manifest' do
+    options = {commit_hash: '12345678', dirty: true}
+    builder = Bosh::Cli::ReleaseBuilder.new(@release, [], [], options)
+    builder.build
+
+    manifest = YAML.load_file(builder.manifest_path)
+    manifest['commit_hash'].should == '12345678'
+    manifest['dirty'].should be_true
+  end
+
   it "doesn't build a new release if nothing has changed" do
     builder = new_builder
     builder.build
