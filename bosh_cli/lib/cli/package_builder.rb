@@ -313,7 +313,7 @@ module Bosh::Cli
 
     def resolve_glob_in_cwd(glob)
       Dir.glob(glob, File::FNM_DOTMATCH).reject do |fn|
-        %w(. ..).include?(File.basename(fn))
+        fn.include?('/.git/') || %w(. ..).include?(File.basename(fn))
       end
     end
 
